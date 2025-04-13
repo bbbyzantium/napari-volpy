@@ -1,57 +1,22 @@
 name: napari-volpy
-display_name: Volpy
-# use 'hidden' to remove plugin from napari hub search results
-visibility: public
-# see https://napari.org/stable/plugins/technical_references/manifest.html#fields for valid categories
-categories: ["Annotation", "Segmentation", "Acquisition"]
+display_name: VolPy Plugin
 contributions:
   commands:
-    - id: napari-volpy.get_reader
+    - id: napari-volpy.make_widget
+      python_name: napari_volpy._dock_widget:make_volpy_widget
+      title: Open VolPy Analysis Widget
+    - id: napari-volpy.reader
       python_name: napari_volpy._reader:napari_get_reader
-      title: Open data with Volpy
-    - id: napari-volpy.write_multiple
-      python_name: napari_volpy._writer:write_multiple
-      title: Save multi-layer data with Volpy
-    - id: napari-volpy.write_single_image
-      python_name: napari_volpy._writer:write_single_image
-      title: Save image data with Volpy
-    - id: napari-volpy.make_sample_data
-      python_name: napari_volpy._sample_data:make_sample_data
-      title: Load sample data from Volpy
-    - id: napari-volpy.make_container_widget
-      python_name: napari_volpy:ImageThreshold
-      title: Make threshold Container widget
-    - id: napari-volpy.make_magic_widget
-      python_name: napari_volpy:threshold_magic_widget
-      title: Make threshold magic widget
-    - id: napari-volpy.make_function_widget
-      python_name: napari_volpy:threshold_autogenerate_widget
-      title: Make threshold function widget
-    - id: napari-volpy.make_qwidget
-      python_name: napari_volpy:ExampleQWidget
-      title: Make example QWidget
-  readers:
-    - command: napari-volpy.get_reader
-      accepts_directories: false
-      filename_patterns: ['*.npy']
-  writers:
-    - command: napari-volpy.write_multiple
-      layer_types: ['image*','labels*']
-      filename_extensions: []
-    - command: napari-volpy.write_single_image
-      layer_types: ['image']
-      filename_extensions: ['.npy']
-  sample_data:
-    - command: napari-volpy.make_sample_data
-      display_name: Volpy
-      key: unique_id.1
+      title: Read VolPy Files
+    - id: napari-volpy.export_results
+      python_name: napari_volpy._dock_widget:export_results
+      title: Export VolPy Results
   widgets:
-    - command: napari-volpy.make_container_widget
-      display_name: Container Threshold
-    - command: napari-volpy.make_magic_widget
-      display_name: Magic Threshold
-    - command: napari-volpy.make_function_widget
-      autogenerate: true
-      display_name: Autogenerate Threshold
-    - command: napari-volpy.make_qwidget
-      display_name: Example QWidget
+    - command: napari-volpy.make_widget
+      display_name: VolPy Analysis
+    - command: napari-volpy.export_results
+      display_name: Export VolPy Results
+  readers:
+    - command: napari-volpy.reader
+      accepts_directories: false
+      filename_patterns: ['*.tif', '*.tiff', '*.h5', '*.hdf5', '*.mmap']
