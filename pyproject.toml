@@ -3,7 +3,7 @@ name = "napari-volpy"
 version = "0.1.0"
 description = "A Napari plugin for VolPy voltage imaging analysis"
 readme = "README.md"
-requires-python = ">=3.9, <3.10"  # CaImAn 更稳定支持 3.9
+requires-python = ">=3.10, <3.11"  # CaImAn 更稳定支持 3.9
 license = {file = "LICENSE"}
 authors = [
     {name = "bbbyzantium", email = "zpd418838434@gmail.com"},

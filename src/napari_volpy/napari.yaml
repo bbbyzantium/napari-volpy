@@ -11,12 +11,24 @@ contributions:
     - id: napari-volpy.export_results
       python_name: napari_volpy._dock_widget:export_results
       title: Export VolPy Results
+    - id: napari-volpy.save_params
+      python_name: napari_volpy._dock_widget:make_save_params_widget
+      title: Save VolPy Parameters
+    - id: napari-volpy.make_sample_data
+      python_name: napari_volpy._sample_data:make_sample_data
+      title: Make Sample Voltage Data
   widgets:
     - command: napari-volpy.make_widget
       display_name: VolPy Analysis
     - command: napari-volpy.export_results
       display_name: Export VolPy Results
+    - command: napari-volpy.save_params
+      display_name: Save VolPy Parameters
   readers:
     - command: napari-volpy.reader
       accepts_directories: false
-      filename_patterns: ['*.tif', '*.tiff', '*.h5', '*.hdf5', '*.mmap']
+      filename_patterns: ['*.tif', '*.tiff', '*.h5', '*.hdf5']  # 移除 .mmap
+  sample_data:
+    - command: napari-volpy.make_sample_data
+      display_name: Sample Voltage Data
+      key: sample_voltage_data

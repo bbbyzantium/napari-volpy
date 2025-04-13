@@ -1,73 +1,41 @@
-"""
-This module is an example of a barebones numpy reader plugin for napari.
-
-It implements the Reader specification, but your plugin may choose to
-implement multiple readers or even other plugin contributions. see:
-https://napari.org/stable/plugins/building_a_plugin/guides.html#readers
-"""
-
+from pathlib import Path
 import numpy as np
+import tifffile
+import h5py
 
 
 def napari_get_reader(path):
-    """A basic implementation of a Reader contribution.
+    """Determine the appropriate reader for the file."""
+    if isinstance(path, str) and path.endswith(
+        (".tif", ".tiff", ".h5", ".hdf5", ".mmap")
+    ):
+        return volpy_reader
+    return None
 
-    Parameters
-    ----------
-    path : str or list of str
-        Path to file, or list of paths.
 
-    Returns
-    -------
-    function or None
-        If the path is a recognized format, return a function that accepts the
-        same path or list of paths, and returns a list of layer data tuples.
-    """
-    if isinstance(path, list):
-        # reader plugins may be handed single path, or a list of paths.
-        # if it is a list, it is assumed to be an image stack...
-        # so we are only going to look at the first file.
-        path = path[0]
+def volpy_reader(path):
+    """Read VolPy-compatible files."""
+    path = Path(path)
+    try:
+        if path.suffix in (".tif", ".tiff"):
+            data = tifffile.imread(path)
+        elif path.suffix in (".h5", ".hdf5"):
+            with h5py.File(path, "r") as f:
+                data = f.get("mov", f.get("data"))[:]  # Common CaImAn keys
+        elif path.suffix == ".mmap":
+            from caiman.base.movies import load  # 延迟导入
 
-    # if we know we cannot read the file, we immediately return None.
-    if not path.endswith(".npy"):
+            data = load(path)
+        else:
+            return None
+
+        # Standardize shape to (T, Y, X)
+        if data.ndim == 2:
+            data = data[np.newaxis, ...]
+        elif data.ndim == 3 and data.shape[-1] < min(data.shape[:2]):
+            data = data.transpose(2, 0, 1)
+
+        return [(data, {"name": path.stem}, "image")]
+    except Exception as e:
+        print(f"Error reading {path}: {e}")
         return None
-
-    # otherwise we return the *function* that can read ``path``.
-    return reader_function
-
-
-def reader_function(path):
-    """Take a path or list of paths and return a list of LayerData tuples.
-
-    Readers are expected to return data as a list of tuples, where each tuple
-    is (data, [add_kwargs, [layer_type]]), "add_kwargs" and "layer_type" are
-    both optional.
-
-    Parameters
-    ----------
-    path : str or list of str
-        Path to file, or list of paths.
-
-    Returns
-    -------
-    layer_data : list of tuples
-        A list of LayerData tuples where each tuple in the list contains
-        (data, metadata, layer_type), where data is a numpy array, metadata is
-        a dict of keyword arguments for the corresponding viewer.add_* method
-        in napari, and layer_type is a lower-case string naming the type of
-        layer. Both "meta", and "layer_type" are optional. napari will
-        default to layer_type=="image" if not provided
-    """
-    # handle both a string and a list of strings
-    paths = [path] if isinstance(path, str) else path
-    # load all files into array
-    arrays = [np.load(_path) for _path in paths]
-    # stack arrays into single array
-    data = np.squeeze(np.stack(arrays))
-
-    # optional kwargs for the corresponding viewer.add_* method
-    add_kwargs = {}
-
-    layer_type = "image"  # optional, default is "image"
-    return [(data, add_kwargs, layer_type)]
